@@ -1,634 +1,394 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Throttle Point</title>
+    <title>Vehicle Selection - Throttle Point</title>
     <style>
-        body {
+        * {
             margin: 0;
-            overflow: hidden;
-            font-family: 'Inter', sans-serif;
-            background-color: #1a202c;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
         }
-        canvas {
-            display: block;
-            width: 100vw;
-            height: 100vh;
-        }
-        #ui-info {
-            position: absolute;
-            left: 10px;
-            bottom: 10px;
-            background-color: rgba(0, 0, 0, 0.5);
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
             color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            box-shadow: none;
-            font-size: 0.9em;
-            z-index: 100;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #car-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .sidebar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 2;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .car-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            line-height: 1.2;
+            min-height: 4.4rem;
+        }
+        
+        .nav-arrows {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .nav-arrow {
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s;
+        }
+        
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .customize-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 1px;
+        }
+        
+        .nickname-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        
+        .nickname-input:focus {
+            outline: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .color-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 50, 50, 0.3);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .color-btn:hover {
+            background: rgba(255, 50, 50, 0.4);
+        }
+        
+        .color-input {
+            display: none;
+        }
+        
+        .start-btn {
+            margin-top: auto;
+            padding: 15px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .start-btn:hover {
+            background: #ff3333;
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
-    <div id="ui-info">
-        ID: <span id="room-id-display">N/A</span>
+    <div id="car-container"></div>
+    
+    <div class="sidebar">
+        <div class="car-name" id="car-name">Vehicle<br>Name</div>
+        
+        <div class="nav-arrows">
+            <div class="nav-arrow" id="prev-car">❮</div>
+            <div class="nav-arrow" id="next-car">❯</div>
+        </div>
+        
+        <div class="customize-section">
+            <div class="section-title">Customization</div>
+            <input type="text" class="nickname-input" id="nickname-input" maxlength="12">
+            
+            <button class="color-btn" id="color-btn">CHANGE COLOR</button>
+            <input type="color" class="color-input" id="color-input" value="#ffffff">
+        </div>
+        
+        <button class="start-btn" id="start-btn">JOIN GAME</button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/FBXLoader.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/renderers/CSS2DRenderer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    
     <script>
-        let scene, camera, renderer;
-        let car, carBody, carBox; 
-        let speed = 0;
-        let acceleration = 0.006;
-        let maxSpeed = 0.4;
-        let reverseMaxSpeed = maxSpeed / 2;
-        let turnSpeed = 0.05; 
-        let velocity = new THREE.Vector3();
-        let wheelAngle = 0;
-
-        const BASE_MAX_WHEEL_ANGLE = Math.PI / 8; 
-        const STEERING_REDUCTION_FACTOR = 0.6; 
+        // Initial settings
+        let vehicles = [];
+        let currentCarIndex = 0;
+        let scene, camera, renderer, carModel, controls;
+        let nickname =  "Guest_" + Math.floor(Math.random() * 900 + 100);
+        let color = "#ffffff";
         
-        const wheelbase = 2.5; 
-        const trackWidth = 1.5; 
+        // Load vehicle list
+        fetch('data/vehicles.json')
+            .then(response => response.json())
+            .then(data => {
+                vehicles = data;
+                updateCarDisplay();
+                init3DViewer();
+            })
+            .catch(error => {
+                console.error('Error loading vehicles:', error);
+                // Fallback
+                vehicles = [
+                    { id: "audi_rs7", name: "Audi RS7" },
+                    { id: "mazda_rx7", name: "Mazda RX-7" }
+                ];
+                updateCarDisplay();
+                init3DViewer();
+            });
         
-        let frontLeftWheel, frontRightWheel, rearLeftWheel, rearRightWheel;
-        let localAllWheelMeshes = []; 
-
-        const cameraLerpFactor = 0.1; 
-        const fovLerpFactor = 0.05; 
-        const minCameraFov = 50; 
-        const maxCameraFov = 60; 
-        let targetCameraPosition = new THREE.Vector3(); 
-        let targetCameraFov = 75; 
-
-        const keys = {
-            w: false, s: false, a: false, d: false, q: false, e: false
-        };
-
-        const carInputs = {
-            accelerate: 0,
-            brake: 0,
-            steer: 0
-        };
-
-        let peer;
-        let connections = {}; 
-        let localPlayerState = { 
-            id: null,
-            x: 0,
-            y: 0.0,
-            z: 0,
-            rotationY: 0,
-            speed: 0,
-            wheelAngle: 0,
-            isHost: false
-        }; 
-        let remoteCarMeshes = {}; 
-        let playersNetworkData = {}; 
-        let lastUpdateTime = 0;
-        const UPDATE_INTERVAL = 1000 / 30; 
-
-        let assetsLoadedCount = 0;
-        const totalAssetsToLoad = 2; 
-        let carModelBase = null; 
-        let trackModelBase = null; 
-
-        const roomIdDisplaySpan = document.getElementById('room-id-display');
-
-        function init() {
+        // Initialize 3D viewer
+        function init3DViewer() {
+            const container = document.getElementById('car-container');
+            
+            // Scene
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB);
-
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 10, -15);
-            camera.fov = targetCameraFov;
-
+            scene.background = new THREE.Color(0x000000);
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(50, (window.innerWidth - 300) / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+            camera.position.y = 1.5;
+            
+            // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); 
-            dirLight.position.set(100, 100, 50);
-            scene.add(dirLight);
-
-            setupControls();
-            loadAssets();
-        }
-
-        function assetLoaded() {
-            assetsLoadedCount++;
-            if (assetsLoadedCount === totalAssetsToLoad) {
-                let track;
-                track = trackModelBase;
-                scene.add(track);
-
-                car = carModelBase.clone(); 
-                car.position.y = 0; 
-                
-                localAllWheelMeshes = []; 
-
-                let gnObject = null;
-                car.traverse(function(child) {
-                    if (child.name === "Gn") {
-                        gnObject = child;
-                    }
-                });
-
-                car.traverse(function(child) {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-                        const lowerCaseName = child.name.toLowerCase();
-                        if (lowerCaseName.includes('wheel') || lowerCaseName.includes('tire')) {
-                            localAllWheelMeshes.push(child);
-                        }
-                    }
-                });
-                
-                carBody = new THREE.Object3D();
-                carBody.add(car);
-                
-                carBox = new THREE.Object3D();
-                carBox.add(carBody);
-                scene.add(carBox);
-
-                carBox.position.set(localPlayerState.x, localPlayerState.y, localPlayerState.z);
-                carBox.rotation.y = localPlayerState.rotationY;
-
-                initializePeerJS();
-                animate();
+            renderer.setSize(window.innerWidth - 300, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+            
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(1, 1, 1);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Orbit controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableZoom = false;
+            controls.enablePan = false;
+            controls.minPolarAngle = Math.PI / 4;
+            controls.maxPolarAngle = Math.PI / 2;
+            controls.target.set(0, 0.5, 0);
+            
+            // Load initial model
+            loadCarModel();
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
             }
-        }
-
-        function loadAssets() {
-            const fbxLoader = new THREE.FBXLoader();
-
-            fbxLoader.load(
-                'source/track.fbx',
-                (loadedTrack) => {
-                    trackModelBase = loadedTrack;
-                    trackModelBase.scale.set(0.01, 0.01, 0.01); 
-                    trackModelBase.position.y = 0; 
-                    assetLoaded();
-                },
-                undefined,
-                (error) => {
-                    console.error("Erro ao carregar a pista FBX:", error);
-                    createFallbackFloor();
-                    assetLoaded(); 
-                }
-            );
-
-            fbxLoader.load(
-                'source/audi_rs7.fbx',
-                (loadedCar) => {
-                    carModelBase = loadedCar;
-                    carModelBase.scale.set(0.01, 0.01, 0.01);
-                    /* carModelBase.children[0].material[0].color.set("cian"); */
-                    assetLoaded();
-                },
-                undefined,
-                (error) => {
-                    console.error("Erro ao carregar o carro FBX:", error);
-                    createFallbackCar();
-                    assetLoaded(); 
-                }
-            );
-        }
-
-        function createFallbackFloor() {
-            const floorGeometry = new THREE.PlaneGeometry(100, 100);
-            const floorMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x3a5f0b, 
-                side: THREE.DoubleSide 
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = (window.innerWidth - 300) / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth - 300, window.innerHeight);
             });
-            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-            floor.rotation.x = -Math.PI / 2;
-            scene.add(floor);
-            console.warn("Usando pista de fallback (plano).");
-        }
-
-        function createFallbackCar() {
-            const carGeometry = new THREE.BoxGeometry(1, 0.5, 2);
-            const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-            car = new THREE.Mesh(carGeometry, carMaterial);
-            car.position.y = 0.25; 
-
-            carBody = new THREE.Object3D();
-            carBody.add(car);
-            
-            carBox = new THREE.Object3D();
-            carBox.add(carBody);
-            scene.add(carBox);
-            console.warn("Usando carro de fallback (caixa).");
-        }
-
-        function setupControls() {
-            document.addEventListener('keydown', onKeyDown);
-            document.addEventListener('keyup', onKeyUp);
-            window.addEventListener('resize', onWindowResize);
-        }
-
-        function onKeyDown(event) {
-            switch(event.code) {
-                case 'KeyW':
-                case 'ArrowUp':
-                    keys.w = true; break;
-                case 'KeyS':
-                case 'ArrowDown':
-                    keys.s = true; break;
-                case 'KeyA':
-                case 'ArrowLeft':
-                    keys.a = true; break;
-                case 'KeyD':
-                case 'ArrowRight':
-                    keys.d = true; break;
-                // --- ADICIONADO ---
-                case 'KeyQ':
-                    keys.q = true; break;
-                case 'KeyE':
-                    keys.e = true; break;
-            }
-        }
-
-        function onKeyUp(event) {
-            switch(event.code) {
-                case 'KeyW':
-                case 'ArrowUp':
-                    keys.w = false; break;
-                case 'KeyS':
-                case 'ArrowDown':
-                    keys.s = false; break;
-                case 'KeyA':
-                case 'ArrowLeft':
-                    keys.a = false; break;
-                case 'KeyD':
-                case 'ArrowRight':
-                    keys.d = false; break;
-                case 'KeyQ':
-                    keys.q = false; break;
-                case 'KeyE':
-                    keys.e = false; break;
-            }
-        }
-
-        function handleGamepadInput() {
-            const gamepads = navigator.getGamepads();
-            if (!gamepads[0]) return;
-            const gamepad = gamepads[0];
-
-            const deadzone = 0.15;
-
-            let stickX = gamepad.axes[0];
-            if (Math.abs(stickX) < deadzone) stickX = 0;
-
-            const dpadLeft = gamepad.buttons[14].pressed;
-            const dpadRight = gamepad.buttons[15].pressed;
-
-            if (stickX !== 0) carInputs.steer = stickX;
-            else if (dpadLeft) carInputs.steer = -1;
-            else if (dpadRight) carInputs.steer = 1;
-
-            const rightTrigger = gamepad.buttons[7].value;
-            const accelerateButton = gamepad.buttons[0].pressed;
-            const brakeButton = gamepad.buttons[2].pressed;
-            
-            carInputs.accelerate = Math.max(rightTrigger, accelerateButton ? 1 : 0);
-            
-            const leftTrigger = gamepad.buttons[6].value;
-            carInputs.brake = Math.max(leftTrigger, brakeButton ? 1 : 0);
-        }
-
-        function updateInputs() {
-            carInputs.steer = 0;
-            carInputs.accelerate = 0;
-            carInputs.brake = 0;
-
-            // 1. Processa o Teclado
-            if (keys.w) carInputs.accelerate = 1;
-            if (keys.s) carInputs.brake = 1;
-            if (keys.a) carInputs.steer = -1;
-            if (keys.d) carInputs.steer = 1;
-
-            // 2. Processa o Gamepad (sobrescreve o teclado se o controle estiver sendo usado)
-            handleGamepadInput();
-        }
-
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
         }
         
-        function updateCarMovement() {
-            if (!carBox || !carBody) return; 
-
-            if (carInputs.accelerate > 0) speed = Math.min(speed + acceleration * carInputs.accelerate, maxSpeed);
-            else if (carInputs.brake > 0) speed = Math.max(speed - acceleration * carInputs.brake, -reverseMaxSpeed);
-            else speed *= 0.98;
-
-            const normalizedSpeed = Math.abs(speed) / maxSpeed;
-            const dynamicMaxWheelAngle = THREE.MathUtils.lerp(BASE_MAX_WHEEL_ANGLE, BASE_MAX_WHEEL_ANGLE * (1 - STEERING_REDUCTION_FACTOR), normalizedSpeed);
-            
-            if (carInputs.steer !== 0) wheelAngle = THREE.MathUtils.clamp(wheelAngle - turnSpeed * carInputs.steer, -dynamicMaxWheelAngle, dynamicMaxWheelAngle);
-            else wheelAngle *= 0.9;
-
-            if (frontLeftWheel && frontRightWheel) {
-                frontLeftWheel.parent.rotation.y = wheelAngle;
-                frontRightWheel.parent.rotation.y = wheelAngle;
+        // Load 3D car model
+        function loadCarModel() {
+            if (carModel) {
+                scene.remove(carModel);
             }
-
-            if (Math.abs(speed) > 0.001) {
-                let turnRadius = Infinity;
-                let angularVelocity = 0;
-
-                if (Math.abs(wheelAngle) > 0.001) { 
-                    turnRadius = wheelbase / Math.tan(wheelAngle);
-                    angularVelocity = speed / turnRadius; 
+            
+            const loader = new THREE.FBXLoader();
+            const carId = vehicles[currentCarIndex].id;
+            const carName = vehicles[currentCarIndex].name;
+            
+            // Split name into two lines if needed
+            const nameParts = carName.split(' ');
+            let displayName = carName;
+            if (nameParts.length > 1) {
+                displayName = nameParts.slice(0, Math.ceil(nameParts.length/2)).join(' ') + '<br>' + 
+                             nameParts.slice(Math.ceil(nameParts.length/2)).join(' ');
+            }
+            document.getElementById('car-name').innerHTML = displayName;
+            
+            loader.load(
+                `source/${carId}.fbx`,
+                (object) => {
+                    carModel = object;
+                    carModel.scale.set(0.01, 0.01, 0.01);
+                    applyColorToModel(color);
+                    
+                    scene.add(carModel);
+                    
+                    // Center the model
+                    const box = new THREE.Box3().setFromObject(carModel);
+                    const center = box.getCenter(new THREE.Vector3());
+                    carModel.position.x = -center.x;
+                    carModel.position.y = -center.y + 0.5;
+                    carModel.position.z = -center.z;
+                },
+                undefined,
+                (error) => {
+                    console.error('Error loading model:', error);
+                    // Fallback cube
+                    const geometry = new THREE.BoxGeometry(1, 0.5, 2);
+                    const material = new THREE.MeshStandardMaterial({ color: color });
+                    carModel = new THREE.Mesh(geometry, material);
+                    scene.add(carModel);
                 }
-
-                carBox.rotation.y += angularVelocity;
-                
-                const forwardVector = new THREE.Vector3(0, 0, 1);
-                forwardVector.applyQuaternion(carBox.quaternion);
-                forwardVector.multiplyScalar(speed);
-                carBox.position.add(forwardVector);
-
-                const wheelRotationAmount = speed * 0.5; 
-                localAllWheelMeshes.forEach(wheel => wheel.rotation.x += wheelRotationAmount);
-
-            } else {
-                localAllWheelMeshes.forEach(wheel => wheel.rotation.x *= 0.95);
-            }
-
-            updateCamera();
+            );
         }
-
-        function updateCamera() {
-            let camOffset;
-
-
-            if (keys.q) camOffset = new THREE.Vector3(-8, 3, -1);
-            else if (keys.e) camOffset = new THREE.Vector3(8, 3, -1);
-            else {
-                camOffset = new THREE.Vector3(0, 5, -10);
-                if (speed < -0.01) camOffset.z *= -1;
-            }
+        
+        // Apply color to model
+        function applyColorToModel(newColor) {
+            if (!carModel) return;
             
-            camOffset.applyQuaternion(carBox.quaternion);
-            targetCameraPosition.copy(carBox.position).add(camOffset);
-
-            const lerpFactor = (keys.q || keys.e) ? 0.2 : cameraLerpFactor;
-            camera.position.lerp(targetCameraPosition, lerpFactor);
-            
-            const speedNormalized = THREE.MathUtils.mapLinear(Math.abs(speed), 0, maxSpeed, 0, 1);
-            targetCameraFov = THREE.MathUtils.lerp(minCameraFov, maxCameraFov, speedNormalized);
-
-            camera.fov = THREE.MathUtils.lerp(camera.fov, targetCameraFov, fovLerpFactor);
-            camera.updateProjectionMatrix();
-
-            camera.lookAt(carBox.position);
-        }
-
-        function initializePeerJS() {
-            peer = new Peer();
-
-            peer.on('open', id => {
-                localPlayerState.id = id;
-                const roomId = prompt("Insira o ID da sala para conectar, ou deixe vazio para criar uma nova:");
-                if (roomId) joinRoom(roomId);
-                else createRoomAsHost();
-            });
-
-            peer.on('connection', conn => {
-                connections[conn.peer] = conn;
-
-                conn.on('open', () => {
-                    if (localPlayerState.isHost) conn.send({ type: 'init', players: { ...playersNetworkData, [localPlayerState.id]: localPlayerState } });
-                    else conn.send({ type: 'newPlayer', player: { ...localPlayerState } });
-                });
-
-                conn.on('data', data => handlePeerData(data, conn.peer));
-                conn.on('close', () => removeCar(conn.peer));
-                conn.on('error', err => console.error('Erro de conexão:', err));
-            });
-
-            peer.on('disconnected', () => {
-                console.warn('PeerJS desconectado. Reconectando...');
-            });
-            peer.on('error', err => {
-                console.error('Erro PeerJS:', err);
-                if (err.type === 'peer-unavailable') alert("ID de sala inválido ou peer não disponível. Por favor, verifique o ID e tente novamente.");
-            });
-        }
-
-        function createRoomAsHost() {
-            localPlayerState.isHost = true;
-            playersNetworkData[localPlayerState.id] = { ...localPlayerState };
-            roomIdDisplaySpan.textContent = localPlayerState.id;
-        }
-
-        function joinRoom(roomId) {
-            const conn = peer.connect(roomId);
-            connections[roomId] = conn;
-
-            conn.on('open', () => {
-                roomIdDisplaySpan.textContent = roomId;
-                conn.send({ type: 'newPlayer', player: { ...localPlayerState } });
-            });
-
-            conn.on('data', data => handlePeerData(data, roomId));
-            conn.on('close', () => {
-                console.warn('Desconectado do host.');
-                for (const id in remoteCarMeshes) {
-                    scene.remove(remoteCarMeshes[id]);
-                    delete remoteCarMeshes[id];
-                }
-                playersNetworkData = { [localPlayerState.id]: localPlayerState };
-            });
-            conn.on('error', err => console.error('Erro de conexão do cliente:', err));
-        }
-
-        function handlePeerData(data, senderPeerId) {
-            switch (data.type) {
-                case 'init':
-                    playersNetworkData = data.players;
-                    for (const id in playersNetworkData) {
-                        if (id !== localPlayerState.id && !remoteCarMeshes[id]) createRemoteCarMesh(id);
-                    }
-                    break;
-                case 'newPlayer':
-                    if (localPlayerState.isHost) {
-                        playersNetworkData[data.player.id] = data.player; 
-                        createRemoteCarMesh(data.player.id);
-                        broadcast({ type: 'playerJoined', player: data.player }, data.player.id);
-                    }
-                    break;
-                case 'playerUpdate':
-                    if (data.player.id !== localPlayerState.id) {
-                        playersNetworkData[data.player.id] = data.player;
-                        if (!remoteCarMeshes[data.player.id]) createRemoteCarMesh(data.player.id);
-                    }
-                    break;
-                case 'playerJoined':
-                    if (!localPlayerState.isHost && data.player.id !== localPlayerState.id) {
-                        playersNetworkData[data.player.id] = data.player;
-                        createRemoteCarMesh(data.player.id);
-                    }
-                    break;
-                case 'playerLeft':
-                    removeCar(data.playerId);
-                    break;
-            }
-        }
-
-        function broadcast(data, excludePeerId = null) {
-            for (const peerId in connections) if (peerId !== excludePeerId && connections[peerId] && connections[peerId].open) connections[peerId].send(data);
-        }
-
-        function sendPlayerUpdate() {
-            const currentTime = Date.now();
-            if (currentTime - lastUpdateTime < UPDATE_INTERVAL) return;
-            lastUpdateTime = currentTime;
-
-            localPlayerState.x = carBox.position.x;
-            localPlayerState.y = carBox.position.y;
-            localPlayerState.z = carBox.position.z;
-            localPlayerState.rotationY = carBox.rotation.y;
-            localPlayerState.speed = speed; 
-            localPlayerState.wheelAngle = wheelAngle; 
-
-            if (localPlayerState.isHost) {
-                playersNetworkData[localPlayerState.id] = { ...localPlayerState };
-                broadcast({ type: 'playerUpdate', player: localPlayerState });
-            } else {
-                const hostConnection = Object.values(connections)[0];
-                if (hostConnection && hostConnection.open) hostConnection.send({ type: 'playerUpdate', player: localPlayerState });
-            }
-        }
-
-        function createRemoteCarMesh(peerId) {
-            if (!carModelBase) {
-                const carGeometry = new THREE.BoxGeometry(1, 0.5, 2);
-                const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 }); 
-                const remoteCar = new THREE.Mesh(carGeometry, carMaterial);
-                remoteCar.position.y = 0.25; 
-                const remoteCarBox = new THREE.Object3D();
-                remoteCarBox.add(remoteCar);
-                scene.add(remoteCarBox);
-                remoteCarMeshes[peerId] = remoteCarBox;
-                remoteCarMeshes[peerId].remoteWheels = [];
-                remoteCar.traverse(function(child) {
-                    if (child.isMesh && (child.name.toLowerCase().includes('wheel') || child.name.toLowerCase().includes('tire'))) remoteCarMeshes[peerId].remoteWheels.push(child);
-                });
-                return;
-            }
-
-            const remoteCar = carModelBase.clone();
-            remoteCar.position.y = 0; 
-            remoteCar.remoteWheels = [];
-            remoteCar.remoteFrontLeftWheelPivot = null;
-            remoteCar.remoteFrontRightWheelPivot = null;
-
-            let gnObject = null;
-            if (remoteCar.children.length > 0 && remoteCar.children[0].name === "Gn") gnObject = remoteCar.children[0];
-            else remoteCar.traverse(function(child) {
-                if (child.name === "Gn") gnObject = child;
-            });
-
-            remoteCar.traverse(function(child) {
+            carModel.traverse(function(child) {
                 if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
                     const lowerCaseName = child.name.toLowerCase();
-                    if (lowerCaseName.includes('wheel') || lowerCaseName.includes('tire')) remoteCar.remoteWheels.push(child);
-                }
-            });
-
-            const remoteCarBody = new THREE.Object3D();
-            remoteCarBody.add(remoteCar);
-            
-            const remoteCarBox = new THREE.Object3D();
-            remoteCarBox.add(remoteCarBody);
-
-            scene.add(remoteCarBox);
-            remoteCarMeshes[peerId] = remoteCarBox;
-            remoteCarMeshes[peerId].model = remoteCar;
-        }
-
-        function removeCar(peerId) {
-            if (remoteCarMeshes[peerId]) {
-                scene.remove(remoteCarMeshes[peerId]);
-                delete remoteCarMeshes[peerId];
-            }
-            if (playersNetworkData[peerId]) delete playersNetworkData[peerId];
-            if (connections[peerId]) {
-                connections[peerId].close();
-                delete connections[peerId];
-            }
-        }
-        
-        window.addEventListener('beforeunloaad', () => {
-            if (localPlayerState.isHost) {
-                broadcast({ type: 'playerLeft', playerId: localPlayerState.id });
-            } else {
-                const hostConnection = Object.values(connections)[0];
-                if (hostConnection && hostConnection.open) hostConnection.send({ type: 'playerLeft', playerId: localPlayerState.id });
-            }
-            peer.destroy();
-        });
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (carBox) {
-                updateInputs();
-                updateCarMovement();
-                sendPlayerUpdate();
-            }
-
-            for (const id in playersNetworkData) {
-                if (id !== localPlayerState.id) {
-                    const remotePlayerState = playersNetworkData[id];
-                    const remoteMeshBox = remoteCarMeshes[id]; 
-
-                    if (remoteMeshBox && remotePlayerState) {
-                        remoteMeshBox.position.lerp(new THREE.Vector3(remotePlayerState.x, remotePlayerState.y, remotePlayerState.z), 0.2); 
-                        const targetQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, remotePlayerState.rotationY, 0));
-                        remoteMeshBox.quaternion.slerp(targetQuaternion, 0.2); 
-
-                        const remoteCarModel = remoteMeshBox.model; 
-                        if (remoteCarModel) {
-                            const wheelRotationAmount = remotePlayerState.speed * 0.5;
-                            remoteCarModel.remoteWheels.forEach(wheel => {
-                                wheel.rotation.x += wheelRotationAmount; 
-                            });
-
-                            if (remoteCarModel.remoteFrontLeftWheelPivot && remoteCarModel.remoteFrontRightWheelPivot) {
-                                remoteCarModel.remoteFrontLeftWheelPivot.rotation.y = remotePlayerState.wheelAngle;
-                                remoteCarModel.remoteFrontRightWheelPivot.rotation.y = remotePlayerState.wheelAngle;
-                            }
+                    if (!lowerCaseName.includes('wheel') && !lowerCaseName.includes('tire')) {
+                        if (Array.isArray(child.material)) {
+                            child.material[0].color.set(newColor);
+                        } else {
+                            child.material.color.set(newColor);
                         }
                     }
                 }
+            });
+        }
+        
+        // Update car display
+        function updateCarDisplay() {
+            const carName = vehicles[currentCarIndex].name;
+            const nameParts = carName.split(' ');
+            let displayName = carName;
+            
+            // Force two-line display
+            if (nameParts.length === 1) {
+                // Split long single words
+                const mid = Math.ceil(nameParts[0].length / 2);
+                displayName = nameParts[0].substring(0, mid) + '<br>' + nameParts[0].substring(mid);
+            } else {
+                // Split into two roughly equal parts
+                displayName = nameParts.slice(0, Math.ceil(nameParts.length/2)).join(' ') + '<br>' + 
+                             nameParts.slice(Math.ceil(nameParts.length/2)).join(' ');
             }
             
-            renderer.render(scene, camera);
+            document.getElementById('car-name').innerHTML = displayName;
+            document.getElementById('nickname-input').value = nickname;
         }
-
-        window.onload = init;
+        
+        // Vehicle navigation
+        document.getElementById('prev-car').addEventListener('click', () => {
+            currentCarIndex = (currentCarIndex - 1 + vehicles.length) % vehicles.length;
+            updateCarDisplay();
+            loadCarModel();
+        });
+        
+        document.getElementById('next-car').addEventListener('click', () => {
+            currentCarIndex = (currentCarIndex + 1) % vehicles.length;
+            updateCarDisplay();
+            loadCarModel();
+        });
+        
+        // Nickname input
+        document.getElementById('nickname-input').addEventListener('input', (e) => {
+            nickname = e.target.value.trim() || 'Player';
+        });
+        
+        // Color selection
+        document.getElementById('color-btn').addEventListener('click', () => {
+            document.getElementById('color-input').click();
+        });
+        
+        document.getElementById('color-input').addEventListener('input', (e) => {
+            color = e.target.value;
+            applyColorToModel(color);
+        });
+        
+        // Start game
+        document.getElementById('start-btn').addEventListener('click', () => {
+            sessionStorage.setItem('metadata', JSON.stringify({
+                nickname: nickname,
+                vehicle: {
+                    id: vehicles[currentCarIndex].id,
+                    name: vehicles[currentCarIndex].name,
+                    color: color
+                }
+            }));
+            window.location.href = 'game.html';
+        });
+        
+        // Initial display update
+        updateCarDisplay();
     </script>
 </body>
 </html>
