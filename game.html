@@ -328,13 +328,13 @@
             const fbxLoader = new THREE.FBXLoader();
 
             fbxLoader.load(
-                'source/map/racetrack.fbx',
+                'source/track.fbx',
                 (loadedTrack) => {
                     trackModelBase = loadedTrack;
-                    trackModelBase.scale.set(0.8, 0.8, 0.8);
+                    trackModelBase.scale.set(0.01, 0.01, 0.01);
                     trackModelBase.position.y -= 1;
                     
-                    const floorGeometry = new THREE.PlaneGeometry(1000, 1000);
+                    /* const floorGeometry = new THREE.PlaneGeometry(1000, 1000);
                     const floorMaterial = new THREE.MeshStandardMaterial({ 
                         color: 0x3a5f0b, 
                         side: THREE.DoubleSide 
@@ -343,7 +343,7 @@
                     floor.rotation.x = -Math.PI / 2;
                     floor.position.copy(trackModelBase.position);
                     floor.position.y -= 1;
-                    scene.add(floor);
+                    scene.add(floor); */
 
                     assetLoaded();
                 },

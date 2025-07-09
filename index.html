@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Throttle Point</title>
+    <title>Throttle Point - Vehicle Selection</title>
     <style>
         * {
             margin: 0;
@@ -12,7 +12,7 @@
         }
         
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #000;
             color: white;
             height: 100vh;
@@ -51,6 +51,10 @@
             letter-spacing: 1px;
             line-height: 1.2;
             min-height: 4.4rem;
+            background: linear-gradient(90deg, #0066ff, #00ccff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
         
         .nav-arrows {
@@ -93,22 +97,25 @@
             width: 100%;
             padding: 12px;
             background: rgba(255, 255, 255, 0.1);
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 5px;
             color: white;
             font-size: 1rem;
             margin-bottom: 15px;
+            transition: all 0.3s;
         }
         
         .nickname-input:focus {
-            outline: 2px solid rgba(255, 255, 255, 0.3);
+            outline: none;
+            border-color: #0066ff;
+            box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.3);
         }
         
         .color-btn {
             width: 100%;
             padding: 15px;
-            background: rgba(255, 50, 50, 0.3);
-            border: none;
+            background: rgba(0, 100, 255, 0.3);
+            border: 1px solid rgba(0, 100, 255, 0.5);
             border-radius: 5px;
             color: white;
             font-size: 1rem;
@@ -119,10 +126,11 @@
             margin-bottom: 15px;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s;
         }
         
         .color-btn:hover {
-            background: rgba(255, 50, 50, 0.4);
+            background: rgba(0, 100, 255, 0.5);
         }
         
         .color-input {
@@ -132,7 +140,7 @@
         .start-btn {
             margin-top: auto;
             padding: 15px;
-            background: #ff0000;
+            background: linear-gradient(90deg, #0066ff, #00aaff);
             color: white;
             border: none;
             border-radius: 5px;
@@ -142,12 +150,151 @@
             letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
         .start-btn:hover {
-            background: #ff3333;
+            background: linear-gradient(90deg, #0077ff, #00bbff);
             transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 100, 255, 0.3);
         }
+
+        /* Enhanced Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 12px;
+            width: 380px;
+            text-align: center;
+            transform: scale(0.95);
+            transition: transform 0.3s ease-out;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0066ff, #00ccff);
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            color: white;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .modal-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 25%;
+            right: 25%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0066ff, transparent);
+        }
+        
+        .modal-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(90deg, #0066ff, #00aaff);
+            border: none;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-btn.primary:hover {
+            background: linear-gradient(90deg, #0077ff, #00bbff);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #0066ff;
+            box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.3);
+        }
+
+        .modal-error {
+            color: #ff4d4d;
+            min-height: 20px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
     </style>
 </head>
 <body>
@@ -163,13 +310,31 @@
         
         <div class="customize-section">
             <div class="section-title">Customization</div>
-            <input type="text" class="nickname-input" id="nickname-input" maxlength="12">
+            <input type="text" class="nickname-input" id="nickname-input" placeholder="Your Nickname" maxlength="12">
             
             <button class="color-btn" id="color-btn">CHANGE COLOR</button>
             <input type="color" class="color-input" id="color-input" value="#ffffff">
         </div>
         
-        <button class="start-btn" id="start-btn">JOIN GAME</button>
+        <button class="start-btn" id="start-btn">START GAME</button>
+    </div>
+
+    <div class="modal-overlay" id="join-modal">
+        <div class="modal-content">
+            <div id="modal-initial-view">
+                <h2 class="modal-title">Join Game</h2>
+                <button class="modal-btn primary" id="host-btn">Create Room</button>
+                <button class="modal-btn" id="show-client-view-btn">Join Room</button>
+                <button class="modal-btn" id="close-modal-btn">Back</button>
+            </div>
+            <div id="modal-client-view" class="hidden">
+                <h2 class="modal-title">Join Room</h2>
+                <div class="modal-error" id="modal-error-msg"></div>
+                <input type="text" id="host-id-input" class="modal-input" placeholder="ROOM ID">
+                <button class="modal-btn primary" id="connect-btn">Connect</button>
+                <button class="modal-btn" id="back-to-initial-view-btn">Back</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
@@ -182,10 +347,26 @@
         // Initial settings
         let vehicles = [];
         let currentCarIndex = 0;
-        let scene, camera, renderer, carModel, controls;
+        let scene, camera, renderer, carModel, controls, ground;
         let nickname =  "Guest_" + Math.floor(Math.random() * 900 + 100);
         let color = "#ffffff";
         
+        // --- Modal Elements ---
+        const joinModal = document.getElementById('join-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const startBtn = document.getElementById('start-btn');
+
+        const initialView = document.getElementById('modal-initial-view');
+        const clientView = document.getElementById('modal-client-view');
+
+        const hostBtn = document.getElementById('host-btn');
+        const showClientViewBtn = document.getElementById('show-client-view-btn');
+        
+        const connectBtn = document.getElementById('connect-btn');
+        const hostIdInput = document.getElementById('host-id-input');
+        const backToInitialViewBtn = document.getElementById('back-to-initial-view-btn');
+        const modalErrorMsg = document.getElementById('modal-error-msg');
+
         // Load vehicle list
         fetch('data/vehicles.json')
             .then(response => response.json())
@@ -195,7 +376,7 @@
                 init3DViewer();
             })
             .catch(error => {
-                console.error('Error loading vehicles:', error);
+                console.error('Error loading vehicles.json:', error);
                 // Fallback
                 vehicles = [
                     { id: "audi_rs7", name: "Audi RS7" },
@@ -205,62 +386,86 @@
                 init3DViewer();
             });
         
-        // Initialize 3D viewer
+        // Initialize 3D viewer with ground plane
         function init3DViewer() {
             const container = document.getElementById('car-container');
             
-            // Scene
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
             
-            // Camera
             camera = new THREE.PerspectiveCamera(50, (window.innerWidth - 300) / window.innerHeight, 0.1, 1000);
-            camera.position.z = 5;
-            camera.position.y = 1.5;
+            camera.position.set(0, 1.5, 5);
             
-            // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth - 300, window.innerHeight);
             renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
             
-            // Lights
-            const ambientLight = new THREE.AmbientLight(0x404040);
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
             scene.add(ambientLight);
             
+            // Add directional light with shadow
             const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(1, 1, 1);
+            directionalLight.position.set(2, 5, 3);
             directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 1024;
+            directionalLight.shadow.mapSize.height = 1024;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 20;
             scene.add(directionalLight);
             
-            // Orbit controls
+            // Create ground plane
+            const groundGeometry = new THREE.PlaneGeometry(20, 20);
+            const groundMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x222222,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+            ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.01;
+            ground.receiveShadow = true;
+            
+            // Add grid helper to ground
+            const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+            gridHelper.position.y = 0;
+            scene.add(gridHelper);
+            scene.add(ground);
+            
+            // Set up orbit controls
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableZoom = false;
             controls.enablePan = false;
-            controls.minPolarAngle = Math.PI / 4;
-            controls.maxPolarAngle = Math.PI / 2;
+            controls.minPolarAngle = Math.PI / 3;
+            controls.maxPolarAngle = Math.PI / 1.8;
             controls.target.set(0, 0.5, 0);
             
-            // Load initial model
             loadCarModel();
             
-            // Animation loop
             function animate() {
                 requestAnimationFrame(animate);
                 controls.update();
+                
+                // Auto-rotation
+                if (carModel) {
+                    carModel.rotation.y += 0.003;
+                }
+
                 renderer.render(scene, camera);
             }
             animate();
             
-            // Handle window resize
             window.addEventListener('resize', () => {
-                camera.aspect = (window.innerWidth - 300) / window.innerHeight;
+                const newWidth = window.innerWidth - 300;
+                const newHeight = window.innerHeight;
+                camera.aspect = newWidth / newHeight;
                 camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth - 300, window.innerHeight);
+                renderer.setSize(newWidth, newHeight);
             });
         }
         
-        // Load 3D car model
         function loadCarModel() {
             if (carModel) {
                 scene.remove(carModel);
@@ -268,16 +473,6 @@
             
             const loader = new THREE.FBXLoader();
             const carId = vehicles[currentCarIndex].id;
-            const carName = vehicles[currentCarIndex].name;
-            
-            // Split name into two lines if needed
-            const nameParts = carName.split(' ');
-            let displayName = carName;
-            if (nameParts.length > 1) {
-                displayName = nameParts.slice(0, Math.ceil(nameParts.length/2)).join(' ') + '<br>' + 
-                             nameParts.slice(Math.ceil(nameParts.length/2)).join(' ');
-            }
-            document.getElementById('car-name').innerHTML = displayName;
             
             loader.load(
                 `source/${carId}.fbx`,
@@ -286,58 +481,73 @@
                     carModel.scale.set(0.01, 0.01, 0.01);
                     applyColorToModel(color);
                     
+                    // Enable shadows for all parts of the car
+                    carModel.traverse(function(child) {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    
                     scene.add(carModel);
                     
                     // Center the model
                     const box = new THREE.Box3().setFromObject(carModel);
                     const center = box.getCenter(new THREE.Vector3());
-                    carModel.position.x = -center.x;
-                    carModel.position.y = -center.y + 0.5;
-                    carModel.position.z = -center.z;
+                    const size = box.getSize(new THREE.Vector3());
+                    carModel.position.sub(center);
+                    carModel.position.y += size.y / 2;
                 },
                 undefined,
                 (error) => {
                     console.error('Error loading model:', error);
-                    // Fallback cube
-                    const geometry = new THREE.BoxGeometry(1, 0.5, 2);
-                    const material = new THREE.MeshStandardMaterial({ color: color });
+                    // Fallback box car
+                    const geometry = new THREE.BoxGeometry(1.8, 0.6, 4);
+                    const material = new THREE.MeshStandardMaterial({ 
+                        color: color, 
+                        roughness: 0.5,
+                        metalness: 0.5
+                    });
                     carModel = new THREE.Mesh(geometry, material);
+                    carModel.position.y = 0.3;
+                    carModel.castShadow = true;
                     scene.add(carModel);
                 }
             );
         }
         
-        // Apply color to model
         function applyColorToModel(newColor) {
             if (!carModel) return;
             
             carModel.traverse(function(child) {
                 if (child.isMesh) {
                     const lowerCaseName = child.name.toLowerCase();
-                    if (!lowerCaseName.includes('wheel') && !lowerCaseName.includes('tire')) {
-                        if (Array.isArray(child.material)) {
-                            child.material[0].color.set(newColor);
-                        } else {
-                            child.material.color.set(newColor);
+                    if (!lowerCaseName.includes('wheel') && 
+                        !lowerCaseName.includes('tire') && 
+                        !lowerCaseName.includes('glass') &&
+                        !lowerCaseName.includes('window') &&
+                        !lowerCaseName.includes('light')) {
+                        let material = child.material;
+                        if (Array.isArray(material)) {
+                            material = material[0];
+                        }
+                        if (material) {
+                            material.color.set(newColor);
                         }
                     }
                 }
             });
         }
         
-        // Update car display
         function updateCarDisplay() {
             const carName = vehicles[currentCarIndex].name;
             const nameParts = carName.split(' ');
             let displayName = carName;
             
-            // Force two-line display
-            if (nameParts.length === 1) {
-                // Split long single words
-                const mid = Math.ceil(nameParts[0].length / 2);
-                displayName = nameParts[0].substring(0, mid) + '<br>' + nameParts[0].substring(mid);
-            } else {
-                // Split into two roughly equal parts
+            if (nameParts.length === 1 && carName.length > 10) {
+                const mid = Math.ceil(carName.length / 2);
+                displayName = carName.substring(0, mid) + '<br>' + carName.substring(mid);
+            } else if (nameParts.length > 1) {
                 displayName = nameParts.slice(0, Math.ceil(nameParts.length/2)).join(' ') + '<br>' + 
                              nameParts.slice(Math.ceil(nameParts.length/2)).join(' ');
             }
@@ -346,7 +556,7 @@
             document.getElementById('nickname-input').value = nickname;
         }
         
-        // Vehicle navigation
+        // Event listeners
         document.getElementById('prev-car').addEventListener('click', () => {
             currentCarIndex = (currentCarIndex - 1 + vehicles.length) % vehicles.length;
             updateCarDisplay();
@@ -359,12 +569,15 @@
             loadCarModel();
         });
         
-        // Nickname input
         document.getElementById('nickname-input').addEventListener('input', (e) => {
-            nickname = e.target.value.trim() || 'Player';
+            let newNick = e.target.value.trim();
+            if (newNick) {
+                nickname = newNick;
+            } else {
+                nickname = "Guest_" + Math.floor(Math.random() * 900 + 100);
+            }
         });
         
-        // Color selection
         document.getElementById('color-btn').addEventListener('click', () => {
             document.getElementById('color-input').click();
         });
@@ -373,10 +586,13 @@
             color = e.target.value;
             applyColorToModel(color);
         });
-        
-        // Start game
-        document.getElementById('start-btn').addEventListener('click', () => {
+
+        function storeDataAndNavigate(isHost, hostId = "") {
             sessionStorage.setItem('metadata', JSON.stringify({
+                connection: {
+                    isHost: isHost,
+                    hostId: hostId
+                },
                 nickname: nickname,
                 vehicle: {
                     id: vehicles[currentCarIndex].id,
@@ -385,6 +601,41 @@
                 }
             }));
             window.location.href = 'game.html';
+        }
+
+        // --- Modal Logic ---
+        startBtn.addEventListener('click', () => {
+            joinModal.classList.add('visible');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            joinModal.classList.remove('visible');
+        });
+
+        showClientViewBtn.addEventListener('click', () => {
+            initialView.classList.add('hidden');
+            clientView.classList.remove('hidden');
+            modalErrorMsg.textContent = '';
+        });
+
+        backToInitialViewBtn.addEventListener('click', () => {
+            clientView.classList.add('hidden');
+            initialView.classList.remove('hidden');
+        });
+
+        hostBtn.addEventListener('click', () => {
+            storeDataAndNavigate(true, "");
+        });
+
+        connectBtn.addEventListener('click', () => {
+            const hostId = hostIdInput.value.trim();
+            if (hostId === "") {
+                modalErrorMsg.textContent = 'Room ID is required';
+                hostIdInput.focus();
+            } else {
+                modalErrorMsg.textContent = '';
+                storeDataAndNavigate(false, hostId);
+            }
         });
         
         // Initial display update
